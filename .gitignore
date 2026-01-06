@@ -25,3 +25,5 @@ dist-ssr
 .vscode/
 
 dist-electron/
+
+release/

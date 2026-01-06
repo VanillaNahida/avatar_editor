@@ -25,11 +25,30 @@ jobs:
       - name: Build for Windows
         run: npm run build:win
 
+      - name: Prepare release files
+        shell: powershell
+        run: |
+          # 提取仓库名称和版本号
+          $REPO_NAME = "${{ github.repository }}".Split("/")[-1]
+          $VERSION = "${{ github.ref_name }}".Replace("v", "")
+          
+          # 创建输出目录
+          New-Item -ItemType Directory -Force -Path "release/dist"
+          
+          # 打包win-unpacked为portable zip
+          Compress-Archive -Path "release/win-unpacked/*" -DestinationPath "release/dist/${REPO_NAME}_v${VERSION}_portable.zip"
+          
+          # 找到并复制exe安装文件，重命名为installer zip
+          $EXE_FILE = Get-ChildItem -Path "release" -Filter "*.exe" | Select-Object -First 1
+          if ($EXE_FILE) {
+            Compress-Archive -Path $EXE_FILE.FullName -DestinationPath "release/dist/${REPO_NAME}_v${VERSION}_installer.zip"
+          }
+
       - name: Upload assets to release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            release/*.exe
-            release/*.zip
+            release/dist/*.zip
+            release/dist/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

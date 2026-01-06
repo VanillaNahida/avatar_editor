@@ -11,8 +11,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "dev:electron": "vite",
-    "build:electron": "vite build && electron-builder",
-    "build:win": "vite build && electron-builder --win"
+    "build:electron": "vite build && electron-builder --publish never",
+    "build:win": "vite build && electron-builder --win --publish never"
   },
   "dependencies": {
     "vue": "^3.5.24",
