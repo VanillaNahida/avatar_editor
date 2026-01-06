@@ -1,0 +1,41 @@
+{
+  "name": "avatar_editor",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "一个简单的千星头像编辑工具，使用Electron框架开发",
+  "author": "@香草味的纳西妲喵 <https://space.bilibili.com/1347891621>",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "dev:electron": "vite",
+    "build:electron": "vite build && electron-builder",
+    "build:win": "vite build && electron-builder --win"
+  },
+  "dependencies": {
+    "vue": "^3.5.24",
+    "vue-cropper": "^1.1.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "electron": "^32.1.2",
+    "electron-builder": "^25.1.7",
+    "vite": "^7.2.4",
+    "vite-plugin-electron": "^0.28.6",
+    "vite-plugin-electron-renderer": "^0.14.5"
+  },
+  "build": {
+    "appId": "com.avatar.editor",
+    "productName": "Avatar Editor 千星头像编辑器",
+    "icon": "./favicon.ico",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist",
+      "dist-electron"
+    ]
+  }
+}
