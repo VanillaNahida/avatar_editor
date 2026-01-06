@@ -9,9 +9,13 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write  # 添加必要的权限
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史，有助于版本检测
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -36,13 +40,31 @@ jobs:
           New-Item -ItemType Directory -Force -Path "release/dist"
           
           # 打包win-unpacked为portable zip
-          Compress-Archive -Path "release/win-unpacked/*" -DestinationPath "release/dist/${REPO_NAME}_v${VERSION}_portable.zip"
+          $PORTABLE_ZIP = "release/dist/${REPO_NAME}_v${VERSION}_portable.zip"
+          Compress-Archive -Path "release/win-unpacked/*" -DestinationPath $PORTABLE_ZIP
+          Write-Host "Created portable zip: $PORTABLE_ZIP"
           
-          # 找到并复制exe安装文件，重命名为installer zip
+          # 找到exe安装文件
           $EXE_FILE = Get-ChildItem -Path "release" -Filter "*.exe" | Select-Object -First 1
           if ($EXE_FILE) {
-            Compress-Archive -Path $EXE_FILE.FullName -DestinationPath "release/dist/${REPO_NAME}_v${VERSION}_installer.zip"
+            # 直接复制exe文件到dist目录
+            $EXE_DEST = "release/dist/$($EXE_FILE.Name)"
+            Copy-Item -Path $EXE_FILE.FullName -Destination $EXE_DEST
+            Write-Host "Copied installer: $EXE_DEST"
+            
+            # 也可以创建exe的zip包（可选）
+            $INSTALLER_ZIP = "release/dist/${REPO_NAME}_v${VERSION}_installer.zip"
+            Compress-Archive -Path $EXE_FILE.FullName -DestinationPath $INSTALLER_ZIP
+            Write-Host "Created installer zip: $INSTALLER_ZIP"
           }
+      - name: Debug - List files
+        shell: bash
+        run: |
+          echo "=== Directory structure ==="
+          find . -type f -name "*.exe" -o -name "*.zip" | sort
+          echo ""
+          echo "=== release/dist contents ==="
+          ls -la release/dist/ || echo "release/dist not found"
 
       - name: Upload assets to release
         uses: softprops/action-gh-release@v2
@@ -50,5 +72,8 @@ jobs:
           files: |
             release/dist/*.zip
             release/dist/*.exe
+          generate_release_notes: true
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
